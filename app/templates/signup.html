@@ -1,8 +1,6 @@
 {% extends 'base.html' %}
 
-
 {% block title %} Sign Up {% endblock %}
-
 
 {% block header %}
     <h1>Sign Up</h1>
@@ -22,11 +20,17 @@
                         {{ form.last_name.label }}
                         {{ form.last_name(class="form-control", placeholder="Enter Last Name") }}
 
-                        {{ form.phone.label }}
-                        {{ form.phone(class="form-control", placeholder="Enter Phone Number") }}
+                        {{ form.email.label }}
+                        {{ form.email(class="form-control", placeholder="Enter Email") }}
 
-                        {{ form.address.label }}
-                        {{ form.address(class="form-control", placeholder="Enter Address") }}
+                        {{ form.username.label }}
+                        {{ form.username(class="form-control", placeholder="Enter Username") }}
+
+                        {{ form.password.label }}
+                        {{ form.password(class="form-control", placeholder="Enter Password") }}
+
+                        {{ form.confirm_pass.label }}
+                        {{ form.confirm_pass(class="form-control", placeholder="Confirm Your Password") }}
 
                         {{ form.submit(class="btn btn-primary w-100 mt-3") }}
 
