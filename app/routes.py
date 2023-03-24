@@ -1,7 +1,7 @@
 from app import app, db
 from flask import render_template, redirect, url_for, flash
-from app.forms import PhoneForm, SignUpForm
-from app.models import Directory
+from app.forms import PhoneForm, SignUpForm, LoginForm
+from app.models import Directory, User
 from flask_login import login_user, logout_user, login_required, current_user
 
 @app.route('/')
@@ -65,26 +65,12 @@ def logout():
     flash("You have logged out", "info")
     return redirect(url_for('index'))
 
-@app.route('/create', methods=["GET", "POST"])
-@login_required
-def create_post():
-    form = PostForm()
-    if form.validate_on_submit():
-        # Get the data from the form
-        title = form.title.data
-        body = form.body.data
-        image_url = form.image_url.data or None
-        # Create an instance of Post with form data AND auth user ID
-        new_post = Post(title=title, body=body, image_url=image_url, user_id=current_user.id)
-        flash(f"{new_post.title} has been created!", "success")
-        return redirect(url_for('index'))
-    return render_template('create.html', form=form)
 
-@app.route('/edit/<post_id>', methods=["GET", "POST"])
+@app.route('/edit/<directory_id>', methods=["GET", "POST"])
 @login_required
-def edit_post(post_id):
-    form = PostForm()
-    post_to_edit = Post.query.get_or_404(post_id)
+def edit_post(directory_id):
+    form = PhoneForm()
+    post_to_edit = Directory.query.get_or_404(directory_id)
     # Make sure that the post author is the current user
     if post_to_edit.author != current_user:
         flash("You do not have permission to edit this post", "danger")
@@ -107,15 +93,15 @@ def edit_post(post_id):
     form.image_url.data = post_to_edit.image_url
     return render_template('edit.html', form=form, post=post_to_edit)
 
-@app.route('/delete/<post_id>')
+@app.route('/delete/<directory_id>')
 @login_required
-def delete_post(post_id):
-    post_to_delete = Post.query.get_or_404(post_id)
-    if post_to_delete.author != current_user:
+def delete_post(directory_id):
+    contact = Directory.query.get_or_404(directory_id)
+    if contact.author != current_user:
         flash("You do not have permission to delete this post", "danger")
         return redirect(url_for('index'))
 
-    db.session.delete(post_to_delete)
+    db.session.delete(contact)
     db.session.commit()
-    flash(f"{post_to_delete.title} has been deleted", "info")
+    flash(f"{contact.title} has been deleted", "info")
     return redirect(url_for('index'))
