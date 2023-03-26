@@ -14,19 +14,25 @@ def signup():
     form = SignUpForm()
     if form.validate_on_submit():
         print('User confirmation form complete.')
-        first = form.first_name.data
-        last = form.last_name.data
-        phone = form.phone.data
-        address = form.address.data
-        print(first, last, phone, address)
-        new_contact = Directory(first_name = first, last_name = last, phone = phone, address = address)
-        flash(f"Thank you {first} for signing up!", "success")
-        return redirect(url_for('index'))
-    return render_template('signup.html', form=form)
+        first_name = form.first_name.data
+        last_name = form.last_name.data
+        email = form.email.data
+        username = form.username.data
+        password = form.password.data
+        print(first_name, last_name, email, username, password)
+
+        check_user = db.session.execute(db.select(User).filter((User.username == username) | (User.email == email))).scalars().all()
+        if check_user:
+            flash("A user with that username and/or email already exists", "warning")
+            return redirect(url_for('signup'))
+        
+        new_user = User(first_name=first_name, last_name=last_name, email=email, username=username, password=password)
+        flash(f"Thank you {new_user.username} for signing up!", "success")
+    return render_template('index.html', form=form)
 
 
-@app.route('/add-phone', methods=["GET", "POST"])
-def add_phone():
+@app.route('/add_contact', methods=["GET", "POST"])
+def add_contact():
     form = PhoneForm()
     if form.validate_on_submit():
         first = form.first_name.data
@@ -35,9 +41,9 @@ def add_phone():
         phone = form.phone_number.data
         print(first, last, address, phone)
         new_contact = Directory(first_name=first, last_name=last, address=address, phone_number=phone)
-        flash(f"{new_contact.first_name} {new_contact.last_name} has been added to the phone book", "success")
+        flash(f"{new_contact.first_name} {new_contact.last_name} has been added your phonebook", "success")
         return redirect(url_for('index'))
-    return render_template('add_phone.html', form=form)
+    return render_template('add_contact.html', form=form)
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -47,10 +53,10 @@ def login():
         username = form.username.data
         password = form.password.data
         print(username, password)
-        # Check if there is a user with username and that password
+
         user = User.query.filter_by(username=username).first()
         if user is not None and user.check_password(password):
-            # If the user exists and has the correct password, log them in
+
             login_user(user)
             flash(f'You have successfully logged in as {username}', 'success')
             return redirect(url_for('index'))
@@ -65,43 +71,45 @@ def logout():
     flash("You have logged out", "info")
     return redirect(url_for('index'))
 
+@app.route('/directory')
+def show_directory():
+    contacts = Directory.query.all()
+    return render_template('directory.html', contacts=contacts)
 
 @app.route('/edit/<directory_id>', methods=["GET", "POST"])
 @login_required
-def edit_post(directory_id):
+def edit_contact(directory_id):
     form = PhoneForm()
-    post_to_edit = Directory.query.get_or_404(directory_id)
-    # Make sure that the post author is the current user
-    if post_to_edit.author != current_user:
-        flash("You do not have permission to edit this post", "danger")
+    contact_to_edit = Directory.query.get_or_404(directory_id)
+    if contact_to_edit.author != current_user:
+        flash("You do not have permission to edit this contact", "danger")
         return redirect(url_for('index'))
 
-    # If form submitted, update Post
     if form.validate_on_submit():
-        # update the post with the form data
-        post_to_edit.title = form.title.data
-        post_to_edit.body = form.body.data
-        post_to_edit.image_url = form.image_url.data
-        # Commit that to the database
+        contact_to_edit.first_name = form.first_name.data
+        contact_to_edit.last_name = form.last_name.data
+        contact_to_edit.phone_number = form.phone_number.data
+        contact_to_edit.address = form.address.data
+
         db.session.commit()
-        flash(f"{post_to_edit.title} has been edited!", "success")
+        flash(f"{contact_to_edit.first_name} {contact_to_edit.last_name} has been edited!", "success")
         return redirect(url_for('index'))
 
-    # Pre-populate the form with Post To Edit's values
-    form.title.data = post_to_edit.title
-    form.body.data = post_to_edit.body
-    form.image_url.data = post_to_edit.image_url
-    return render_template('edit.html', form=form, post=post_to_edit)
+    form.first_name.data = contact_to_edit.first_name
+    form.last_name.data = contact_to_edit.last_name
+    form.phone_number.data = contact_to_edit.phone_number
+    form.address.data = contact_to_edit.address
+    return render_template('edit.html', form=form, contact=contact_to_edit)
 
 @app.route('/delete/<directory_id>')
 @login_required
 def delete_post(directory_id):
     contact = Directory.query.get_or_404(directory_id)
-    if contact.author != current_user:
-        flash("You do not have permission to delete this post", "danger")
-        return redirect(url_for('index'))
+    if contact.user_id != current_user.id:
+        flash("You do not have permission to delete this contact", "danger")
+        return redirect(url_for('directory'))
 
     db.session.delete(contact)
     db.session.commit()
-    flash(f"{contact.title} has been deleted", "info")
-    return redirect(url_for('index'))
+    flash(f"{contact.first_name} {contact.last_name} has been deleted", "info")
+    return redirect(url_for('directory'))

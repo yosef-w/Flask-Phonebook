@@ -13,7 +13,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(75), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    posts = db.relationship('Post', backref='author')
+    directory = db.relationship('Directory', backref='author')
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
