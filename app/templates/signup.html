@@ -7,9 +7,10 @@
 {% endblock %}
 
 {% block content %}
-    <div class="row">
+<div class="container bg-light">
+    <div class="row" >
         <div class="col">
-            <div class="card mt-3">
+            <div class="card mt-3 mb-3">
                 <div class="card-body">
                     <form action="" method="post">
                         {{ form.csrf_token }}
@@ -39,4 +40,5 @@
             </div>
         </div>
     </div>
+</div>
 {% endblock %}

@@ -1,33 +1,33 @@
 {% extends 'base.html' %}
 
-{% block title %}Create A Contact{% endblock %}
+{% block title %}Edit A Post{% endblock %}
 
 {% block header %}
-    <h1>Create A Contact</h1>
+    <h1>Edit {{ contact.title }}</h1>
 {% endblock %}
 
 {% block content %}
 <div class="container bg-light">
     <div class="row">
         <div class="col">
-            <div class="card mt-3">
+            <div class="card mt-3 mb-3">
                 <div class="card-body">
                     <form action="" method="post">
                         {{ form.csrf_token }}
 
                         {{ form.first_name.label }}
-                        {{ form.first_name(class="form-control", placeholder="Enter First Name") }}
+                        {{ form.first_name(class="form-control") }}
 
                         {{ form.last_name.label }}
-                        {{ form.last_name(class="form-control", placeholder="Enter Last Name") }}
+                        {{ form.last_name(class="form-control") }}
 
                         {{ form.phone_number.label }}
-                        {{ form.phone_number(class="form-control", placeholder="Enter Phone Number") }}
+                        {{ form.phone_number(class="form-control") }}
 
                         {{ form.address.label }}
-                        {{ form.address(class="form-control", placeholder="Enter Address") }}
+                        {{ form.address(class="form-control") }}
 
-                        {{ form.submit(class="btn btn-primary w-100 mt-3") }}
+                        {{ form.submit(class="btn btn-primary w-100 mt-3", value="Edit Post") }}
 
                     </form>
                 </div>

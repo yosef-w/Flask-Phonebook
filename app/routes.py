@@ -28,7 +28,8 @@ def signup():
         
         new_user = User(first_name=first_name, last_name=last_name, email=email, username=username, password=password)
         flash(f"Thank you {new_user.username} for signing up!", "success")
-    return render_template('index.html', form=form)
+        return redirect(url_for('index'))
+    return render_template('signup.html', form=form)
 
 
 @app.route('/add_contact', methods=["GET", "POST"])
@@ -40,7 +41,7 @@ def add_contact():
         address = form.address.data
         phone = form.phone_number.data
         print(first, last, address, phone)
-        new_contact = Directory(first_name=first, last_name=last, address=address, phone_number=phone)
+        new_contact = Directory(first_name=first, last_name=last, address=address, phone_number=phone, user_id = current_user.id)
         flash(f"{new_contact.first_name} {new_contact.last_name} has been added your phonebook", "success")
         return redirect(url_for('index'))
     return render_template('add_contact.html', form=form)
@@ -76,14 +77,14 @@ def show_directory():
     contacts = Directory.query.all()
     return render_template('directory.html', contacts=contacts)
 
-@app.route('/edit/<directory_id>', methods=["GET", "POST"])
+@app.route('/edit/<contact_id>', methods=["GET", "POST"])
 @login_required
-def edit_contact(directory_id):
+def edit_contact(contact_id):
     form = PhoneForm()
-    contact_to_edit = Directory.query.get_or_404(directory_id)
+    contact_to_edit = Directory.query.get_or_404(contact_id)
     if contact_to_edit.author != current_user:
         flash("You do not have permission to edit this contact", "danger")
-        return redirect(url_for('index'))
+        return redirect(url_for('show_directory'))
 
     if form.validate_on_submit():
         contact_to_edit.first_name = form.first_name.data
@@ -93,7 +94,7 @@ def edit_contact(directory_id):
 
         db.session.commit()
         flash(f"{contact_to_edit.first_name} {contact_to_edit.last_name} has been edited!", "success")
-        return redirect(url_for('index'))
+        return redirect(url_for('show_directory'))
 
     form.first_name.data = contact_to_edit.first_name
     form.last_name.data = contact_to_edit.last_name
@@ -101,15 +102,15 @@ def edit_contact(directory_id):
     form.address.data = contact_to_edit.address
     return render_template('edit.html', form=form, contact=contact_to_edit)
 
-@app.route('/delete/<directory_id>')
+@app.route('/delete/<contact_id>')
 @login_required
-def delete_post(directory_id):
-    contact = Directory.query.get_or_404(directory_id)
-    if contact.user_id != current_user.id:
+def delete_contact(contact_id):
+    contact_to_delete = Directory.query.get_or_404(contact_id)
+    if contact_to_delete.author != current_user:
         flash("You do not have permission to delete this contact", "danger")
-        return redirect(url_for('directory'))
+        return redirect(url_for('show_directory'))
 
-    db.session.delete(contact)
+    db.session.delete(contact_to_delete)
     db.session.commit()
-    flash(f"{contact.first_name} {contact.last_name} has been deleted", "info")
-    return redirect(url_for('directory'))
+    flash(f"{contact_to_delete.first_name} {contact_to_delete.last_name} has been deleted", "info")
+    return redirect(url_for('show_directory'))
